@@ -1,17 +1,19 @@
 package io.nikolamicic21.multiplehierarchicalcontexts;
 
-import io.nikolamicic21.multiplehierarchicalcontexts.data.DataService;
-import io.nikolamicic21.multiplehierarchicalcontexts.web.WebService;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import io.nikolamicic21.multiplehierarchicalcontexts.data.DataContextConfiguration;
+import io.nikolamicic21.multiplehierarchicalcontexts.web.WebContextConfiguration;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 
-@SpringBootApplication
+@SpringBootConfiguration
 public class MainApplication {
 
     public static void main(String[] args) {
-        final var context = SpringApplication.run(MainApplication.class, args);
-        final var webService = context.getBean(WebService.class);
-        final var dataService = context.getBean(DataService.class);
+        new SpringApplicationBuilder()
+                .sources(MainApplication.class).web(WebApplicationType.NONE)
+                .child(DataContextConfiguration.class).web(WebApplicationType.NONE)
+                .child(WebContextConfiguration.class).web(WebApplicationType.NONE)
+                .run(args);
     }
-
 }
