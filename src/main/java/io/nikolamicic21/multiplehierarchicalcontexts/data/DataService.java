@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class DataService {
 
-    private WebService webService;
+    private final WebService webService;
 
     public String getName() {
         return getClass().getSimpleName() + "#" + getClass().getMethods()[0].getName();
