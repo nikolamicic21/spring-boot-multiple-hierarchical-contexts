@@ -184,7 +184,7 @@ public class MainApplication {
 Context hierarchy defined above in the `SpringApplicationBuilder` can
 be represented with the following diagram.
 
-![main-data-web-contexts-hierarchy][main-data-web-contexts-hierarchy-ref]
+![main-data-web-contexts-hierarchy](diagrams/main-data-web-contexts-hierarchy.drawio.png)
 
 If we now try to autowire `WebService` into 
 `DataService` _bean_ we will get 
@@ -243,7 +243,7 @@ public class EventContextConfiguration {
 
 Diagram for this kind of hierarchy is shown below.
 
-![main-data-web-event-contexts-hierarchy][main-data-web-event-contexts-hierarchy-ref]
+![main-data-web-event-contexts-hierarchy](diagrams/main-data-web-event-contexts-hierarchy.drawio.png)
 
 As we can see from the diagram now all child contexts 
 share the same parent and form sibling relationship.
