@@ -5,14 +5,14 @@
 In addition to creating **only one** [`ApplicationContext`](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/ApplicationContext.html) 
 in a typical Spring Boot application, there is possibility to 
 create **multiple** instances of `ApplicationContext` in a single 
-_Spring Boot_ application. These contexts can form a parent-child 
+_Spring Boot_ application. These contexts can form parent-child 
 relationships between them. This way we don't have anymore a single 
 `ApplicationContext` containing all _beans_ defined in the 
 application. Rather we can have a hierarchy of contexts each 
 containing _beans_ defined within themselves. In addition, 
 forming the parent-child relationships between contexts, 
-accessibility of _beans_ defined in one context 
-from another contexts can be controlled.
+accessibility of _beans_ defined in a context can be 
+controlled.
 
 ### Introduction
 
@@ -30,14 +30,14 @@ public class MainApplication {
 }
 ```
 
-The static method `run` from [`SpringApplication`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/SpringApplication.html) 
+Static method `run` from [`SpringApplication`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/SpringApplication.html) 
 class will create a single `ApplicationContext`. 
-The context will contain all the _beans_ defined 
+The context will contain all custom _beans_ defined 
 in the application, as well as _beans_ which will be created during 
 _Spring_'s auto-configuration process. This means that wherever in our 
 application we can request any _bean_ from the context to be autowired 
-with _Spring_'s dependency injection mechanism. In most of the cases 
-this will be desired way to do. 
+with _Spring_'s dependency injection mechanism. In most cases 
+this will be desired way to do.
 
 But there could be situations where we wouldn't like that all defined 
 _beans_ are accessible within the whole application. Maybe we would 
@@ -45,34 +45,31 @@ like to restrict access on some specific _beans_ because some part
 of the application shouldn't know about them. The real-world
 example could be that we have _multi-modular_ project, and we 
 don't want that _beans_ defined in one module know about _beans_ 
-defined in other modules. Another example could be that in typical 
+defined in other modules. Another example could be that in a typical 
 3-layer architecture (controller-service-repository) we restrict 
 access to controller _beans_ from repository related _beans_.
 
-_Spring Boot_ can take care about this with its [Fluent Builder API](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#features.spring-application.fluent-builder-api) 
-, containing central class [`SpringApplicationBuilder`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/builder/SpringApplicationBuilder.html)
-in this API.
+_Spring Boot_ enables creating multiple contexts
+with its [Fluent Builder API](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#features.spring-application.fluent-builder-api).
+Class which is in the core of this API is [`SpringApplicationBuilder`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/builder/SpringApplicationBuilder.html).
 
 ### Single context application
 
 We will start with a simple _Spring Boot_ application having 
 only one context. The application will be written in _Java_ 
-and will use _Maven_ as a building tool.
+and will use _Maven_ as building tool.
 
-The application will contain only core _Spring_ dependendecies with 
-help of _spring-boot-starter_.
-
-Resulting `pom.xml` file should look like the one on 
-the [link](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/blob/main/pom.xml).
+The application will contain only core _Spring_ and 
+_Spring Boot_ dependencies with help of 
+_spring-boot-starter_. Resulting `pom.xml` file should 
+look like the one on the [link](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/blob/main/pom.xml).
 
 There are two different packages in the application:
 
 - **web** package
 - **data** package
 
-both containing relevant service _beans_ (`WebService` and `DataService`).
-
-
+both containing relevant _beans_ (`WebService` and `DataService`). 
 Source code of the single context application where `WebService`
 has dependency on `DataService` can be found [here](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/tree/single-context-webService-dependsOn-dataService).
 
@@ -94,7 +91,7 @@ public class MainApplication {
 ```
 
 _Spring_ will resolve both _beans_ and return singleton instances 
-of both classes (`WebService` and `DataService`).
+by default of both classes (`WebService` and `DataService`).
 This means that both _beans_ are accessible from the context 
 via _getBean_ method and that _Spring_ can autowire an instance of
 `DataService` into the instance of `WebService` via
@@ -107,31 +104,31 @@ we could achieve that as well. _Spring_ will be able to autowire _bean_ of type
 `WebService` into the `DataService` _bean_. Source code with reversed
 dependency direction can be found [here](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/tree/single-context-dataService-dependsOn-webService).
 
-All this is possible because all the _beans_ are part of **the same context**.
+All this is possible because all _beans_ are part of **the same context**.
 
 ### Multiple hierarchical contexts
 
 With help of _SpringApplicationBuilder_ we can create multiple 
 contexts in our application and form parent-child relationships
-between them. This way we can restrict accessibility of the `WebService` 
-_bean_ in a way that it cannot be dependency injected into `DataService`.
+between them. This way we can restrict access of the `WebService` 
+_bean_ in the way that it cannot be injected into `DataService`.
 
 The rule for multiple context hierarchy with parent-child relationship 
-is that all _beans_ from parent context are accessible in child
-contexts, but not the other way around. In our case context which defines
-`WebService` will be child of the context which defines
-`DataService`. Another rule is that a context can have only one
-parent context.
+is that all **_beans_ from parent context are accessible in child
+contexts**, but not the other way around. In our case context which defines
+`WebService` will be child context of the context which defines
+`DataService`. Another rule is that a context can have **only one
+parent context**.
 
 This could be achieved in a couple of steps:
 
-- Step One would be to create a context for web related 
-_beans_ in the [`@Configuration`](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Configuration.html) 
-class in web package. This context will discover all 
-_beans_ defines within the web package with help of 
+- Step One would be to create context for web related 
+_beans_ in a new class, annotated with [`@Configuration`](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/Configuration.html) 
+, in the web package. This context will scan all 
+_beans_ defined within the web package with help of 
 [`@ComponentScan`](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/context/annotation/ComponentScan.html). Annotation 
 [`@EnableAutoConfiguration`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/EnableAutoConfiguration.html) 
-will take care of triggering _Spring_ auto-configuration process.
+will take care of triggering _Spring_'s auto-configuration process.
 
 ```java
 @ComponentScan
@@ -142,9 +139,10 @@ public class WebContextConfiguration {
 ```
 
 - Step Two would be to create a context for data related
-_beans_ in the `@Configuration` class in data package.
-_Beans_ defined within the data package will be discovered
-the same way as the ones defined in web package.
+_beans_ in a new class, annotated with `@Configuration` 
+in the data package. _Beans_ defined within the data package 
+will be discovered the same way as the ones defined in 
+the web package.
 
 ```java
 @ComponentScan
@@ -156,15 +154,17 @@ public class DataContextConfiguration {
 
 - Step Three is to use only [`@SpringBootConfiguration`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/SpringBootConfiguration.html)
 annotation on our main class instead of well-known [`@SpringBootApplication`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/autoconfigure/SpringBootApplication.html)
-annotation in order to prevent component scanning and auto-configuration, because 
-we will do this in each child context explicitly.
+annotation in order to prevent component scanning and auto-configuration.
+As we saw before, both processes (component scanning and 
+auto-configuration) will be done in each child context 
+separately.
+
 
 - Step Four is to use `SpringApplicationBuilder` class instead
 of `SpringApplication` class like in the code snippet below.
 Method _web_ in `SpringApplicationBuilder` specifies which type of
 web application the specific context will define (possible values are
-NONE, SERVLET, and REACTIVE defined in 
-[`WebApplicationType`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/WebApplicationType.html)).
+NONE, SERVLET, and REACTIVE defined in [`WebApplicationType`](https://docs.spring.io/spring-boot/docs/current/api/org/springframework/boot/WebApplicationType.html)).
 
 ```java
 @SpringBootConfiguration
@@ -191,8 +191,9 @@ If we now try to autowire `WebService` into
 [`NoSuchBeanDefinitionException`](https://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/NoSuchBeanDefinitionException.html)
 stating that `WebService` _bean_ cannot be found.
 This comes from the statement that _beans_ defined in child 
-contexts are not accessible in the parent context.
-The source code with this changes can be found [here](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/tree/multiple-contexts-dataService-cannot-access-webService).
+contexts are not accessible from the parent context.
+The source code with these changes can be found [here](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/tree/multiple-contexts-dataService-cannot-access-webService).
+
 There will be no exception thrown if we try to autowire `DataService` into
 `WebService` as _beans_ defined in parent context
 are visible to _beans_ defined in child contexts. Source code
@@ -204,13 +205,13 @@ depends on `DataService` can be found [here](https://github.com/nikolamicic21/sp
 Another interesting hierachy which can be used is when we 
 have a single parent context with multiple children
 contexts where each child context forms sibling relationship 
-with other contexts.
+with other child contexts.
 
-The rule for sibling contexts is that single sibling context 
-**cannot** access _beans_ defined in other sibling contexts.
+The rule for sibling contexts is that **_beans_ in one 
+sibling context cannot access _beans_ defined in other 
+sibling contexts**.
 
-Let us see how would main class look like now.
-
+Let us see how the main class for this case looks like.
 
 ```java
 @SpringBootConfiguration
@@ -230,7 +231,7 @@ public class MainApplication {
 
 As we can see, we have introduced additional context 
 named `EventContextConfiguration` in a separate package named
-**event**. The context is defined in a similar way like the 
+**event**. The context is defined the similar way like the 
 other child contexts.
 
 ```java
@@ -241,18 +242,19 @@ public class EventContextConfiguration {
 }
 ```
 
-Diagram for this kind of hierarchy is shown below.
+Diagram for this kind of context hierarchy is shown below.
 
 ![main-data-web-event-contexts-hierarchy](diagrams/main-data-web-event-contexts-hierarchy.drawio.png)
 
-As we can see from the diagram now all child contexts 
+As we can see from the diagram all child contexts 
 share the same parent and form sibling relationship.
 
 If we retain the same dependency hierarchy, where `WebService`
 depends on `DataService`, we will now get `NoSuchBeanDefinitionException`
-exception, because it is not accessable from the 
+exception, because it is not accessible from the 
 sibling context. Source code for this stage of the
 application can be found [here](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/tree/multiple-sibling-contexts-webService-can-access-dataService). 
+
 One thing to note is that child contexts can still access 
 _beans_ defined in the parent context.
 
@@ -260,16 +262,15 @@ _beans_ defined in the parent context.
 
 In this installment we have seen how we can create 
 a _Spring Boot_ application containing multiple 
-contexts and how we can form parent-child relationships
-between them.
+contexts and how they can form parent-child relationships.
 
 We have also mentioned a couple of real-world scenarios
 where we could structure contexts in hierarchy and 
 what are the reasons to do so.
 
-Also there are multiple ways to form parent-child 
-relationships including sibling relationship, depending
-on the use case of the application.
+Also, we have also seen that there are multiple ways 
+to form parent-child relationship including sibling 
+relationship.
 
 ### References
 
