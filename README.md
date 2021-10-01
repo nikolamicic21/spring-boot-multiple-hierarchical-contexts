@@ -269,8 +269,8 @@ where we could structure contexts in hierarchy and
 how.
 
 Also, we have seen that there are multiple ways 
-to form parent-child relationship including sibling 
-relationship.
+to form parent-child relationships including sibling 
+relationships.
 
 ### References
 
