@@ -11,7 +11,7 @@ relationships between them. This way we don't have any longer a single
 application. We can rather have a hierarchy of contexts each 
 containing _beans_ defined within themselves. Forming the parent-child 
 relationships between contexts, accessibility of _beans_ defined in a 
-context that can be controlled.
+context can be controlled.
 
 ### Introduction
 
@@ -193,7 +193,7 @@ contexts are not accessible from the parent context.
 The source code with these changes can be found [here](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/tree/multiple-contexts-dataService-cannot-access-webService).
 
 There will be no exception thrown in the case when we try to auto-wire `DataService` into
-`WebService` as _beans_ defined in parent context, 
+`WebService` as _beans_ defined in parent context are 
 visible to _beans_ defined in child contexts. The source code
 of the application with multiple contexts where `WebService`
 depends on `DataService` can be found [here](https://github.com/nikolamicic21/spring-boot-multiple-hierarchical-contexts/tree/multiple-contexts-webService-can-access-dataService).
